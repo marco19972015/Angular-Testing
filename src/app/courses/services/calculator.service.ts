@@ -28,60 +28,70 @@ export class CalculatorService {
 
 
   // SIDE NOTES 
-  // We will be focusing on the implementations of the it('should add two numbers') specification
-  // The first thing we'll need is an instance of the CalculatorService service in the spec file
-  // we create it under the specification
-    // const calculator = new CalculatorService();
+  // In this lesson we are going to continue the implementation of the unit test of the calculator sercice
+  // And we are going to talk about some typical ways of structuring our test
+  // We are going to introduce the notion of dependency injection in Angular testing
 
-  // Now the calculator service is going to take a single dependency, which is the logger service
-  // The logger service itself does not have any dependencies, 
-  // so we can instatiate it inside the parameter of the CalculatorService instance by calling its contructor
-    //   it('should add two numbers', () => {
-    //     const calculator = new CalculatorService( new LoggerService);
-    // });
-  // Now we have an instance of our CalculatorService
+  // INSTEAD of creating an instance of the LoggerService
+    // const calculator = new CalculatorService( new LoggerService());
 
-  // We can now use it in order to add two numbers 
-    // const result = calculator.add(2, 2);
+  // We can do the same thing using the Jasmine to create a SPY object using createSpyObj utility
+  // We create a fake dependency using Jasmine SPY method
+  // we create the createSpyObj and give the Spy object a name, and then we define an array containing a list of methods 
+  // of our fake logger implementation. We only add the log method, 
+  // if we pass nothing it will create a fake logger service with no methods
 
+  // So now we have a complete fake implementation of a logger service
+  // THIS IS AN OBJECT CREATED BY JASMINE THAT CONTAINS ONLY 1 METHOD CALLED 'log'
 
-  // Now we need to ensure that this result is the expected result
-  // To do this we write first TEST ASSUR-SHANCE
-  // We use the expect() function utility from Jasmine as so
-    // expect();
-  // And we say we are going to expect() the result to be 4
-    // expect(result).toBe(4);
+  // Where the first argument is the basename and the second argument is the method name
+    // const logger = jasmine.createSpyObj('LoggerService', ["log"]);
+    // const calculator = new CalculatorService( logger );
   
-  // Jasmine provides us multiple methods such as toBeCloseTo, toBeDefined, toBeGreaterThan, etc... to write 
-  // all types of ASSUR-SHANCE
+  // We can then add an extra assurshance to make sure the the Logger service is being called once 
+  // Whenever we call the subtract method by using the toHaveBeenCalledTimes() utility function
+    //  expect(logger.log).toHaveBeenCalledTimes(1);
+
+  // PROBLEM - we repeate the initialization loggic twice in the two specification
+    // const logger = jasmine.createSpyObj('LoggerService', ["log"]);
+    // const calculator = new CalculatorService( logger);
+
+  // In more complex test, they become a problem
+  // In order to avoid this problem we have the Jasmine beforeEach EXECUTION BLOCK
+    // beforeEach(() => {   
+    // })
   
-  // This is our test ASSUR-SHANCE, this will make sure the test fails if it's not 4
-
-
-  // OUR FIRST SPECIFICATION LOOKS LIKE THIS
-    //   it('should add two numbers', () => {
-  // First, we have a setup phase, where we are preparing the components or services we want to test 
-    //     const calculator = new CalculatorService( new LoggerService());
-  // Second, we have an execution phase, where we are going to trigger the operation we want to test 
-    //     const result = calculator.add(2, 2);
-  // Lastly, we write a series of test ASSUR-SHANCE, that are either going to fail marking the test as fail
-  // or they are going to be successful, which marks the test as successful
-    //     expect(result).toBe(4);
-    // });
+  // The beforeEach Block is going to be executed before each of the specification
+  // So in this current case, since we have two specification the beforeEach Block will be called two times 
   
-  // If we fail intentially (done in the subtraction service class)
-  // After the toBe(0, ), we can add a second argument that describes why the assurshance has failed such as 
-    // expect(result).toBe(0, "Unexpected subtraction result");
-  // The ability to add this description is available in all of Jasmin assurance utility methods 
+  // This block is the ideal place to put the repeated initialization loggic
+
+  // PROBLEM - both the variables that are declared from creating the instances of both services will not be in scope
+  // To fix this we define the variables a level above the test suites
+  // We define the following variables as so...
+    // let calculator: CalculatorService;
+    // let loggerSpy: any;
+  // We define it as type any, because it can have any function that can return any sort of value
+  // This solves the issue
 
 
-  // LETS SAY WE WANT TO TAKE THIS TEST ONE STEP FURTHER
-  // lets say we want to not only do we want to test the result of the calculation is correct
-  // BUT also we want to make sure that the logger service is only called once whenever we call this operation
-  
-  // Lets imagine that the LoggerSerive consumes expensive resources that should not be overused 
-  // So we'll make sure that it only gets called once per operation
-  // In order to test this we'll introduce the concept of Jasmine SPIE
- 
+  // By creating the two variable in the outer scope we not remove the const from the variable in the beforeEach block
+    //   beforeEach(() => {
+    //     loggerSpy = jasmine.createSpyObj('LoggerService', ["log"]);
+    //     calculator = new CalculatorService( loggerSpy);
+    // }) 
+
+  // Each instnance of the calculator and loggerSpy variables are independent from eachother when 
+  // assigned in each specification 
+
+
+  // IF WE FIND OURSELVES IN A SITUATION WHERE THE ORDER OF TEST MATTER AND CHANGING THE ORDER OF THE TEST CAUSES 
+  // THE TEST TO EITHER FAIL OR COMPLETE AS WE SWITCH THE ORDER OF THE TEST...
+  // THAT IS AN INDICATION THE TEST ARE NOT WELL ISOLATED 
+  // AND THAT SOME OF THE SET UP OF ONE TEST IS TYPICALLY INTERFERING WITH ANOTHER TEST UNINTENTIONALY
+  // That would be a good time to check the beforeEach block to make sure that all the test dependencies are getting initialized correctly 
+  // Before each test
+
+
 }
 
