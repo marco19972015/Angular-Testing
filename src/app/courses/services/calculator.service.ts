@@ -28,71 +28,48 @@ export class CalculatorService {
 
 
   // SIDE NOTES 
-  // Just like we use dependency injection in our code we can do the same in Jasmine
-  // This is useful when we are testing components instaed of services, that way Angular will be able to
-  // provide fake implementation of some of its internal services that will make it simple for us 
-  // to simulate DOM interaction
-
-  // Going back to our calculator service test suite, we will introduce Angular TestBed utility
+  // This lesson "Angular Unit Testing Best Practices and Commonly Used Test Utilities" is a summary 
+  // and an intro to some Jasmine testing utilities
   
-  // What will it allow us to do?
-  // The Angular testBed will allow us to provide the dependency to our services by using dependency 
-  // injection, instead of calling the constructor explicitly as we were doing. so...
-    // calculator = new CalculatorService(loggerSpy);
+  // So how can we unit test Angular services?
+  // The key thing is to define a series of functional specifications (so the 'it' blocks)
+  // which tests ONE functionality of the service
+  // So typically we want to test one of the methods of the service PER specification
 
-  // To start we will cal Angular's TestBed and we will call the method configureTestingModule.
-  // This method takes 1 configuration object that contains properties that are very similiar to the ones 
-  // present in an Angulars module (such as declarations, imports, providers, schemas)
-    // TestBed.configureTestingModule({
-    
-    // })
+  // All the test that we write follow a 3 step process 
+  // 1. We set up the test. This is usually done by the use of a beforeEach() block that gets executed before each test.
+  // 2. Once the test is set up, we perform the operation that we want to test. 
+  // 3. After the operation is performed, we will run a series of assertions that will either pass the test or fail
   
-  // In our case, since we aren't using components yet we will start off with providers
-    //   TestBed.configureTestingModule({
-    //     providers: {
-        
-    //     }
-    // })
+  // It's important whenever we are unit testing the service that we mock ALL of its imediate dependencies 
+  // So we should not inject REAL instances of dependencies in the service. 
+  // Instead we should provide alternative test only implementations using for example Jasmine spys 
   
-  // Inside the providers array is where we can start to provide the services we want 
-    //   TestBed.configureTestingModule({
-    //     providers: [
-    //         CalculatorService, 
-    //         LoggerService,
-    //         // {provide: LoggerService, useValue: loggerSpy}
-    //     ]
-    // })
+  // Jasmine spys will allow us to intercept the calls to an existant method in an existing service.
+  // Or they will also allow us to create a complete mock implementation of a service (ex. being the 'LoggerService')
+
+  // Why do we mock all the dependencies and only use the real instance for the service itself??
+  // The goal is to test the CalculatorService in isolation (assuming all other parts that this service interacts with are working correctly)
   
-  // PROBLEM - if we inject LoggerService, we will loose the ability to check how many times 
-  // the service is running since it will no longer be considered a spy
-  // SOLUTION - Using the code below we can create our own provider 
+  // If we instead DIDNT use a spy for the LoggerService, we would be injecting a REAL implementation of the logger service
+  // then in this case it would no longer be a unit test. 
+  // It would then become an INTEGRATION test, because we would be testing not only the CalculatorService in isolation
+  // but we would be testing the CalculatorService, LoggerService and the way the two implementations work together.
+  // That's why we MOCK our dependencies so we can still consider this a unit test and not an integration test.
 
-  // FIRST identify exactly what we are providing to the Angular dependency injection (so we place a 
-  // dependency injection token.) The token is a unique identifier that identifies what we are injecting
-  // So our dependency injection key is going to be the name of the logger service class itself (LoggerService)
+  // EXTRA JASMINE TEST UTILITIES
+  // If we want to disable the complete test suite, we can do so by adding an x before the describe 
+    // ex. xdescribe('CalculatorService',
+  
+  // We can also disable specific test using the same method. (skips execution of a test)
+    // xit('should add two numbers', () => {
 
-  // SECOND we need to specify how we are going to inject our logger service, for that we use the property useValue 
-  // useValue is used whenever we want to provide a value that is going to be used. In our case whenever we need a logger service anywhere in the application
-  // Our value in this cause is going to be the Jasmine (loggerSpy) itself
+  // when debugging and have multiple test we can focus on one specfic test or suite
+  // We can use the focus function 
+  // fdescribe('CalculatorService',
 
-  // With this we have used the TestBed to configure a simple testing module that currently only has a 
-  // couple of services
-
-  // now we can use the TestBed to retrieve our CalculatorService instead of calling the constructor explicitly
-  // It goes from...
-    // calculator = new CalculatorService(loggerSpy);
-
-  // To 
-    // calculator = TestBed.inject(CalculatorService);
-  // Where we call the TestBed.inject method and we pass in a unique identifier that identifies what
-  // service we are trying to retrieve (which in this case is the CalculatorService constructor function
-  // as a unique dependency injection key that will indicate that in this case we need the singleton
-  // instance of the calculator service that is part of the testing module)
-
-  // If we run our test we can see things works. There are pros to using the TestBed over a constructor when injecting
-  // instances of our services
-
-
+  // We can do the same with test
+  // fit('should add two numbers', () => {
 
 }
 
