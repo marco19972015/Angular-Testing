@@ -69,7 +69,7 @@ export class CalculatorService {
   // fdescribe('CalculatorService',
 
   // We can do the same with test
-  // fit('should add two numbers', () => {
+  // it('should add two numbers', () => {
 
 }
 
