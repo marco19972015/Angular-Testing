@@ -28,69 +28,70 @@ export class CalculatorService {
 
 
   // SIDE NOTES 
-  // In this lesson we are going to continue the implementation of the unit test of the calculator sercice
-  // And we are going to talk about some typical ways of structuring our test
-  // We are going to introduce the notion of dependency injection in Angular testing
+  // Just like we use dependency injection in our code we can do the same in Jasmine
+  // This is useful when we are testing components instaed of services, that way Angular will be able to
+  // provide fake implementation of some of its internal services that will make it simple for us 
+  // to simulate DOM interaction
 
-  // INSTEAD of creating an instance of the LoggerService
-    // const calculator = new CalculatorService( new LoggerService());
-
-  // We can do the same thing using the Jasmine to create a SPY object using createSpyObj utility
-  // We create a fake dependency using Jasmine SPY method
-  // we create the createSpyObj and give the Spy object a name, and then we define an array containing a list of methods 
-  // of our fake logger implementation. We only add the log method, 
-  // if we pass nothing it will create a fake logger service with no methods
-
-  // So now we have a complete fake implementation of a logger service
-  // THIS IS AN OBJECT CREATED BY JASMINE THAT CONTAINS ONLY 1 METHOD CALLED 'log'
-
-  // Where the first argument is the basename and the second argument is the method name
-    // const logger = jasmine.createSpyObj('LoggerService', ["log"]);
-    // const calculator = new CalculatorService( logger );
+  // Going back to our calculator service test suite, we will introduce Angular TestBed utility
   
-  // We can then add an extra assurshance to make sure the the Logger service is being called once 
-  // Whenever we call the subtract method by using the toHaveBeenCalledTimes() utility function
-    //  expect(logger.log).toHaveBeenCalledTimes(1);
+  // What will it allow us to do?
+  // The Angular testBed will allow us to provide the dependency to our services by using dependency 
+  // injection, instead of calling the constructor explicitly as we were doing. so...
+    // calculator = new CalculatorService(loggerSpy);
 
-  // PROBLEM - we repeate the initialization loggic twice in the two specification
-    // const logger = jasmine.createSpyObj('LoggerService', ["log"]);
-    // const calculator = new CalculatorService( logger);
-
-  // In more complex test, they become a problem
-  // In order to avoid this problem we have the Jasmine beforeEach EXECUTION BLOCK
-    // beforeEach(() => {   
+  // To start we will cal Angular's TestBed and we will call the method configureTestingModule.
+  // This method takes 1 configuration object that contains properties that are very similiar to the ones 
+  // present in an Angulars module (such as declarations, imports, providers, schemas)
+    // TestBed.configureTestingModule({
+    
     // })
   
-  // The beforeEach Block is going to be executed before each of the specification
-  // So in this current case, since we have two specification the beforeEach Block will be called two times 
+  // In our case, since we aren't using components yet we will start off with providers
+    //   TestBed.configureTestingModule({
+    //     providers: {
+        
+    //     }
+    // })
   
-  // This block is the ideal place to put the repeated initialization loggic
+  // Inside the providers array is where we can start to provide the services we want 
+    //   TestBed.configureTestingModule({
+    //     providers: [
+    //         CalculatorService, 
+    //         LoggerService,
+    //         // {provide: LoggerService, useValue: loggerSpy}
+    //     ]
+    // })
+  
+  // PROBLEM - if we inject LoggerService, we will loose the ability to check how many times 
+  // the service is running since it will no longer be considered a spy
+  // SOLUTION - Using the code below we can create our own provider 
 
-  // PROBLEM - both the variables that are declared from creating the instances of both services will not be in scope
-  // To fix this we define the variables a level above the test suites
-  // We define the following variables as so...
-    // let calculator: CalculatorService;
-    // let loggerSpy: any;
-  // We define it as type any, because it can have any function that can return any sort of value
-  // This solves the issue
+  // FIRST identify exactly what we are providing to the Angular dependency injection (so we place a 
+  // dependency injection token.) The token is a unique identifier that identifies what we are injecting
+  // So our dependency injection key is going to be the name of the logger service class itself (LoggerService)
 
+  // SECOND we need to specify how we are going to inject our logger service, for that we use the property useValue 
+  // useValue is used whenever we want to provide a value that is going to be used. In our case whenever we need a logger service anywhere in the application
+  // Our value in this cause is going to be the Jasmine (loggerSpy) itself
 
-  // By creating the two variable in the outer scope we not remove the const from the variable in the beforeEach block
-    //   beforeEach(() => {
-    //     loggerSpy = jasmine.createSpyObj('LoggerService', ["log"]);
-    //     calculator = new CalculatorService( loggerSpy);
-    // }) 
+  // With this we have used the TestBed to configure a simple testing module that currently only has a 
+  // couple of services
 
-  // Each instnance of the calculator and loggerSpy variables are independent from eachother when 
-  // assigned in each specification 
+  // now we can use the TestBed to retrieve our CalculatorService instead of calling the constructor explicitly
+  // It goes from...
+    // calculator = new CalculatorService(loggerSpy);
 
+  // To 
+    // calculator = TestBed.inject(CalculatorService);
+  // Where we call the TestBed.inject method and we pass in a unique identifier that identifies what
+  // service we are trying to retrieve (which in this case is the CalculatorService constructor function
+  // as a unique dependency injection key that will indicate that in this case we need the singleton
+  // instance of the calculator service that is part of the testing module)
 
-  // IF WE FIND OURSELVES IN A SITUATION WHERE THE ORDER OF TEST MATTER AND CHANGING THE ORDER OF THE TEST CAUSES 
-  // THE TEST TO EITHER FAIL OR COMPLETE AS WE SWITCH THE ORDER OF THE TEST...
-  // THAT IS AN INDICATION THE TEST ARE NOT WELL ISOLATED 
-  // AND THAT SOME OF THE SET UP OF ONE TEST IS TYPICALLY INTERFERING WITH ANOTHER TEST UNINTENTIONALY
-  // That would be a good time to check the beforeEach block to make sure that all the test dependencies are getting initialized correctly 
-  // Before each test
+  // If we run our test we can see things works. There are pros to using the TestBed over a constructor when injecting
+  // instances of our services
+
 
 
 }

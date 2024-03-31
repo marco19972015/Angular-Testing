@@ -1,14 +1,24 @@
 import { CalculatorService } from "./calculator.service";
 import { LoggerService } from "./logger.service";
+import { TestBed } from '@angular/core/testing'
 
 
 describe('CalculatorService', () => {
     let calculator: CalculatorService;
+    // loggerSpy is any since we can return anything with this spy
     let loggerSpy: any;
 
     beforeEach(() => {
         loggerSpy = jasmine.createSpyObj('LoggerService', ["log"]);
-        calculator = new CalculatorService( loggerSpy);
+
+        TestBed.configureTestingModule({
+            providers: [
+                CalculatorService, 
+                {provide: LoggerService, useValue: loggerSpy}
+            ]
+        })
+
+        calculator = TestBed.inject(CalculatorService);
     }) 
 
     it('should add two numbers', () => {
