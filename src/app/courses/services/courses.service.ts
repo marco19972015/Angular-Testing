@@ -11,6 +11,8 @@ import {Lesson} from "../model/lesson";
 @Injectable()
 export class CoursesService {
 
+    // we can see this is an HTTP based service
+    // it also contains serveral method 
     constructor(private http:HttpClient) {
 
     }
